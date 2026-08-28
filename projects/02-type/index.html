@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1분 성격유형 판정소</title>
+<meta name="description" content="12문항, 1분. 행동 상황으로 판정하는 초간단 성격유형 검사 — 결과는 정식 결과통지서처럼.">
+<meta property="og:title" content="1분 성격유형 판정소">
+<meta property="og:description" content="12문항이면 끝. 당신의 유형을 결과통지서로 발급해 드립니다.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;900&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { min-height:100%; }
+  body {
+    font-family:'Noto Sans KR', -apple-system, 'Apple SD Gothic Neo', sans-serif;
+    background:#585d66;
+    background-image:linear-gradient(180deg, #4e535c, #5d626b);
+    color:#24272e;
+    display:flex; justify-content:center; padding:18px 12px 30px;
+  }
+  #paper {
+    width:100%; max-width:460px; background:#fdfdfa; border-radius:3px;
+    box-shadow:0 8px 30px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.1);
+    padding:26px 22px 30px; position:relative;
+  }
+  /* 문서 상단 */
+  .docHead { border-bottom:3px double #24272e; padding-bottom:12px; }
+  .docMeta { display:flex; justify-content:space-between; font-size:0.66rem; color:#6b7079; letter-spacing:0.04em; }
+  .docTitle {
+    font-family:'Noto Serif KR', serif; font-weight:900; text-align:center;
+    font-size:1.35rem; letter-spacing:0.25em; margin:12px 0 4px; text-indent:0.25em;
+  }
+  .docSub { text-align:center; font-size:0.7rem; color:#6b7079; letter-spacing:0.12em; }
+
+  .section { margin-top:20px; }
+  .lead { font-size:0.82rem; line-height:1.9; color:#3a3f48; }
+  .lead b { color:#24272e; }
+  .stampNote {
+    margin-top:14px; font-size:0.72rem; color:#6b7079; line-height:1.8;
+    border-left:3px solid #d8d5c9; padding-left:10px;
+  }
+  #compareBanner {
+    display:none; margin-top:14px; padding:10px 12px; font-size:0.78rem; line-height:1.7;
+    background:#f2efe4; border:1px solid #d8d5c9;
+  }
+  #compareBanner b { color:#2b4a8b; }
+
+  .btn {
+    display:block; width:100%; margin-top:16px; padding:15px; font-size:0.95rem; font-weight:700;
+    font-family:inherit; cursor:pointer; border:1.5px solid #24272e; background:#24272e; color:#fdfdfa;
+    letter-spacing:0.06em;
+  }
+  .btn.sub { background:#fdfdfa; color:#24272e; margin-top:10px; }
+  .btn:active { transform:translateY(1px); }
+
+  /* 검사 화면 */
+  #quiz { display:none; }
+  .qNum { font-size:0.7rem; color:#6b7079; letter-spacing:0.08em; }
+  .qBar { height:4px; background:#e8e5da; margin-top:6px; }
+  .qBar i { display:block; height:100%; background:#2b4a8b; transition:width 0.25s; }
+  .qText {
+    font-family:'Noto Serif KR', serif; font-weight:600; font-size:1.02rem;
+    line-height:1.75; margin:22px 0 18px; min-height:3.4em;
+  }
+  .choice {
+    display:block; width:100%; text-align:left; margin-top:10px; padding:14px 14px;
+    font-size:0.88rem; line-height:1.6; font-family:inherit; cursor:pointer;
+    background:#fdfdfa; border:1.5px solid #c9c6ba; color:#3a3f48;
+  }
+  .choice:active { background:#f2efe4; border-color:#2b4a8b; }
+  .choice .mark { font-weight:700; color:#2b4a8b; margin-right:8px; }
+
+  /* 결과지 */
+  #report { display:none; }
+  .rHead { display:flex; justify-content:space-between; font-size:0.66rem; color:#6b7079; }
+  .typeBox { text-align:center; margin:18px 0 6px; position:relative; }
+  .typeLetters {
+    font-family:'Noto Serif KR', serif; font-weight:900; font-size:4rem; letter-spacing:0.12em;
+    text-indent:0.12em; color:#24272e;
+  }
+  .typeAlias { font-size:1rem; font-weight:700; color:#2b4a8b; margin-top:2px; }
+  .stamp {
+    position:absolute; right:-6px; top:-14px; transform:rotate(12deg);
+    border:3px solid #d03325; color:#d03325; border-radius:6px;
+    font-family:'Noto Serif KR', serif; font-weight:900; font-size:0.9rem;
+    padding:6px 10px; letter-spacing:0.3em; text-indent:0.3em; opacity:0.85;
+  }
+  .axes { margin-top:18px; border-top:1px solid #d8d5c9; padding-top:14px; }
+  .axis { margin-top:10px; }
+  .axisLabels { display:flex; justify-content:space-between; font-size:0.72rem; color:#3a3f48; }
+  .axisLabels b { color:#24272e; }
+  .gauge { height:10px; background:#e8e5da; margin-top:5px; position:relative; }
+  .gauge i { display:block; height:100%; background:#2b4a8b; }
+  .gauge s { position:absolute; left:50%; top:-2px; bottom:-2px; width:1px; background:#a5a294; }
+  .rSection { margin-top:18px; }
+  .rTitle {
+    font-size:0.72rem; font-weight:700; letter-spacing:0.15em; color:#6b7079;
+    border-bottom:1px solid #d8d5c9; padding-bottom:5px;
+  }
+  .rBody { font-size:0.85rem; line-height:1.95; margin-top:9px; color:#3a3f48; }
+  #compatBox { display:none; }
+  #compatBox .rBody b { color:#2b4a8b; }
+  .disclaimer { margin-top:20px; font-size:0.62rem; color:#9b988c; line-height:1.7; border-top:1px solid #e8e5da; padding-top:8px; }
+  #nick {
+    width:100%; margin-top:16px; padding:12px; border:1.5px solid #c9c6ba; background:#fdfdfa;
+    color:#24272e; font-size:0.88rem; font-family:inherit; outline:none; text-align:center;
+  }
+  #nick:focus { border-color:#2b4a8b; }
+  #nick.need { border-color:#d03325; }
+  #nickWarn { display:none; margin-top:6px; font-size:0.7rem; color:#d03325; text-align:center; }
+  #copied { display:none; margin-top:8px; font-size:0.75rem; color:#2b4a8b; text-align:center; font-weight:700; }
+</style>
+</head>
+<body>
+<div id="paper">
+  <div class="docHead">
+    <div class="docMeta"><span id="docNo">제2026-0000호</span><span id="docDate"></span></div>
+    <div class="docTitle">성격유형 판정소</div>
+    <div class="docSub">약식 자가진단 · 소요시간 1분 · 12문항</div>
+  </div>
+
+  <!-- 안내 -->
+  <div class="section" id="intro">
+    <p class="lead">
+      본 판정소는 <b>행동 상황 12문항</b>으로 귀하의 성격유형(4개 지표)을 약식 판정하고,
+      <b>결과통지서</b>를 발급합니다.
+    </p>
+    <p class="stampNote">
+      · 문항에는 정답이 없습니다. "바람직한 나"가 아니라 <b>실제로 하는 행동</b>을 고르십시오.<br>
+      · 오래 고민할수록 부정확해집니다. 3초 안에 고르십시오.
+    </p>
+    <div id="compareBanner">발신인 <b id="cbName"></b> (<b id="cbType"></b>) —
+      "내 유형은 나왔다. 당신 것도 궁금하다."<br>검사 완료 시 두 사람의 궁합이 함께 판정됩니다.</div>
+    <button class="btn" id="startBtn">검사 시작</button>
+  </div>
+
+  <!-- 검사 -->
+  <div class="section" id="quiz">
+    <div class="qNum" id="qNum"></div>
+    <div class="qBar"><i id="qBarFill" style="width:0%"></i></div>
+    <div class="qText" id="qText"></div>
+    <button class="choice" id="chA"><span class="mark">A.</span><span id="chAText"></span></button>
+    <button class="choice" id="chB"><span class="mark">B.</span><span id="chBText"></span></button>
+  </div>
+
+  <!-- 결과통지서 -->
+  <div class="section" id="report">
+    <div class="rHead"><span>결과통지서</span><span id="rDate"></span></div>
+    <div class="typeBox">
+      <div class="typeLetters" id="typeLetters"></div>
+      <div class="typeAlias" id="typeAlias"></div>
+      <div class="stamp">판정완료</div>
+    </div>
+    <div class="axes" id="axes"></div>
+    <div class="rSection">
+      <div class="rTitle">종합 소견</div>
+      <div class="rBody" id="rDesc"></div>
+    </div>
+    <div class="rSection">
+      <div class="rTitle">권고 사항</div>
+      <div class="rBody" id="rCaution"></div>
+    </div>
+    <div class="rSection" id="compatBox">
+      <div class="rTitle">궁합 판정</div>
+      <div class="rBody" id="rCompat"></div>
+    </div>
+    <input id="nick" maxlength="10" placeholder="통지서에 기재할 이름">
+    <div id="nickWarn">이름을 기재해야 발송할 수 있습니다</div>
+    <button class="btn" id="shareBtn">결과 보내기</button>
+    <div id="copied">복사 완료 — 붙여넣으면 상대에게도 검사가 발급됩니다</div>
+    <button class="btn sub" id="retryBtn">재검사</button>
+    <div class="disclaimer">
+      본 검사는 재미를 위한 약식 자가진단으로, 공식 심리검사가 아니며 특정 기관의 검사와 무관합니다.
+      결과는 이 기기에만 저장됩니다.
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id);};
+
+  // ---- 문항 (행동 상황, 축당 3문항) ----
+  var QS=[
+    {ax:'EI',q:'금요일 저녁, 잡혀 있던 약속이 갑자기 취소됐다. 솔직한 첫 반응은?',
+     a:['아싸. 오늘은 집이다.','I'], b:['아쉬운데… 다른 사람 부를까?','E']},
+    {ax:'SN',q:'영화를 보고 나온 직후, 머릿속에 남는 것은?',
+     a:['인상 깊었던 장면과 배우, 줄거리','S'], b:['영화가 던진 메시지와 "만약 나라면"','N']},
+    {ax:'TF',q:'친구가 힘든 일을 털어놓는다. 나도 모르게 먼저 나오는 말은?',
+     a:['"그래서 어떻게 할 건데? 이렇게 해봐."','T'], b:['"헐, 진짜 힘들었겠다…"','F']},
+    {ax:'JP',q:'여행 출발 전날 밤, 나의 상태는?',
+     a:['일정·예약·동선 정리 끝. 가방도 쌌다.','J'], b:['표는 있으니까 됐다. 가서 정하지 뭐.','P']},
+    {ax:'EI',q:'처음 보는 사람들이 대부분인 모임에 앉아 있다. 나는?',
+     a:['먼저 말을 건다. 어색한 침묵이 더 힘들다.','E'], b:['누가 말을 걸어주길 기다리며 폰을 본다.','I']},
+    {ax:'SN',q:'누군가에게 길을 설명할 때 나는?',
+     a:['"편의점에서 좌회전해서 200m 직진."','S'], b:['"그 카페 있는 골목 분위기 따라 쭉 가면 나와."','N']},
+    {ax:'TF',q:'내 결과물에 대한 비판을 들었다. 먼저 드는 생각은?',
+     a:['맞는 말인가? 논리적으로 따져본다.','T'], b:['말투가 좀 상처다. 기분이 먼저 상한다.','F']},
+    {ax:'JP',q:'마감이 있는 일을 받으면 나는?',
+     a:['미리 쪼개서 해둔다. 마감 전날의 나를 못 믿는다.','J'], b:['마감 직전에 초인적인 집중력이 나온다.','P']},
+    {ax:'EI',q:'진이 빠지는 하루를 보냈다. 회복하는 방법은?',
+     a:['사람을 만나서 떠들다 보면 풀린다.','E'], b:['혼자 있어야 충전된다. 연락도 잠시 꺼두고 싶다.','I']},
+    {ax:'SN',q:'회의에서 새 프로젝트 얘기가 나왔다. 내가 먼저 하는 말은?',
+     a:['"그거 현실적으로 가능해? 일정과 비용은?"','S'], b:['"오, 그럼 이런 것도 되겠네요. 아예 이렇게 하면?"','N']},
+    {ax:'TF',q:'두 가지 선택지에서 결정을 내릴 때 최종 기준은?',
+     a:['어느 쪽이 맞는가. 손익과 논리.','T'], b:['어느 쪽이 모두에게 덜 상처인가.','F']},
+    {ax:'JP',q:'내 책상(또는 폰 바탕화면)의 상태는?',
+     a:['정리돼 있어야 마음이 편하다.','J'], b:['남들 눈엔 혼돈, 내 눈엔 나만 아는 질서.','P']}
+  ];
+
+  // ---- 16유형 데이터 ----
+  var TYPES={
+    ISTJ:['원칙의 실무자','맡은 일은 반드시 끝내는 사람. 약속과 마감이 곧 인격이며, 조직에서 가장 믿고 맡기는 유형입니다.','"융통성 없다"는 말은 칭찬의 다른 표현이지만, 가끔은 예외를 허용해도 세상이 무너지지 않습니다.'],
+    ISFJ:['조용한 수호자','티 나지 않게 챙기고, 놀랄 만큼 세세히 기억합니다. 주변 사람들은 당신 덕에 편한 줄도 모르고 편합니다.','헌신을 당연하게 여기는 사람에게는 조용히 상처받습니다. 부탁은 가끔 거절해도 됩니다.'],
+    INFJ:['통찰의 은둔자','사람의 속을 꿰뚫어보면서 정작 자신의 속은 잘 보여주지 않습니다. 소수와 깊게, 그러나 진심으로 연결됩니다.','혼자 다 삭이는 것이 습관이 되면 어느 날 갑자기 연락이 두절됩니다. 미리 말하십시오.'],
+    INTJ:['냉철한 전략가','결론부터 말하는 타입. 머릿속에는 이미 플랜 C까지 준비되어 있습니다. 비효율을 보면 견디지 못합니다.','세상 일이 전부 계획대로 되지는 않으며, 그래도 됩니다. 감정도 데이터입니다.'],
+    ISTP:['과묵한 해결사','말은 없지만 고장 난 것은 어느새 고쳐져 있습니다. 위기 상황에서 오히려 침착해지는 드문 유형입니다.','최대의 적은 귀찮음입니다. 시동만 걸리면 누구보다 빠릅니다.'],
+    ISFP:['감성 장인','조용히 자기 취향의 세계를 가꿉니다. 싫은 것은 절대 하지 않지만, 좋아하는 것에는 놀라운 집중력을 보입니다.','갈등을 피하는 것이 습관이 되면 손해도 조용히 쌓입니다. 가끔은 싫다고 말하십시오.'],
+    INFP:['이상주의 몽상가','겉은 잔잔하지만 속은 서사시입니다. 의미 없는 일에는 시동이 걸리지 않고, 의미 있는 일에는 밤을 새웁니다.','현실의 마감일에도 나름의 의미가 있습니다. 완벽한 때는 오지 않습니다.'],
+    INTP:['논리 실험실','"그게 왜?"가 인생의 기본 질문. 아이디어는 넘치지만 마무리는 드뭅니다. 지적 정확성에 진심입니다.','완벽한 이론보다 제출된 초안이 낫습니다. 설명할 때는 상대의 표정도 확인하십시오.'],
+    ESTP:['현장의 승부사','일단 부딪히고 생각은 나중에 합니다. 모두가 얼어붙는 위기에서 가장 침착하게 움직입니다.','지루함을 견디지 못해 스스로 사건을 만들기도 합니다. 그 에너지를 아껴 쓰십시오.'],
+    ESFP:['무대 체질','당신이 있는 곳이 곧 파티입니다. 분위기를 살리는 재능은 배워서 되는 것이 아닙니다.','즐거움의 값은 나중에 청구됩니다. 통장 잔고도 가끔 확인하십시오.'],
+    ENFP:['아이디어 폭죽','열정 점화까지 0.1초. 사람과 가능성에 진심이며, 처음 만난 사람도 10분 만에 오랜 친구로 만듭니다.','시작한 일의 절반만 끝내도 대성공입니다. 끝내는 연습이 유일한 숙제입니다.'],
+    ENTP:['논쟁의 불꽃','토론이 취미, 반박이 특기. 안 되는 이유 대신 되는 방법을 찾아내는 데 탁월합니다.','논쟁에서 이기는 것과 사람을 얻는 것은 다른 일입니다. 가끔은 져 주십시오.'],
+    ESTJ:['조직의 기둥','체계가 없는 곳에 체계를 만듭니다. 책임감이 기본 장착이라 어디서든 결국 관리자가 됩니다.','내 기준이 항상 남의 기준은 아닙니다. 지시보다 질문이 먹힐 때가 있습니다.'],
+    ESFJ:['분위기 관리자','모두가 편안한지 살피는 레이더가 항상 켜져 있습니다. 모임의 실질적 운영자입니다.','모두를 만족시키는 것은 불가능한 목표입니다. 당신의 만족도 순번에 넣으십시오.'],
+    ENFJ:['타고난 멘토','사람을 키우고 연결하는 데서 에너지를 얻습니다. 당신의 격려로 인생이 바뀐 사람이 반드시 있습니다.','남을 챙기다 자기 배터리가 방전되는 것이 고질병입니다. 충전 시간을 사수하십시오.'],
+    ENTJ:['야망의 지휘관','목표가 생기면 사람과 자원이 움직이기 시작합니다. 비효율과 변명을 견디지 못합니다.','모두가 당신의 속도로 뛸 수는 없습니다. 페이스 조절도 지휘의 일부입니다.']
+  };
+
+  var AXES=[['E','I','외향','내향'],['S','N','현실','직관'],['T','F','사고','감정'],['J','P','계획','유연']];
+  var COMPAT=[
+    ['영혼의 쌍둥이',98,'네 지표가 모두 같습니다. 서로의 침묵까지 통역이 필요 없는 사이입니다.'],
+    ['환상의 케미',87,'세 지표가 같습니다. 비슷해서 편하고, 하나의 차이가 지루할 틈을 없앱니다.'],
+    ['밀당 콤비',68,'절반이 같고 절반이 다릅니다. 맞을 땐 척척, 어긋날 땐 협상이 필요합니다.'],
+    ['성장 파트너',52,'겹치는 지표가 하나뿐입니다. 서로에게 배울 것이 가장 많은 조합입니다.'],
+    ['정반대 자석',41,'네 지표가 전부 다릅니다. 필연이 되거나 사건이 되거나, 둘 중 하나입니다.']
+  ];
+
+  // ---- 상태 ----
+  var idx=0, score={E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0};
+  var myType=null;
+
+  function store(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+  function load(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+
+  // 문서번호/날짜
+  var now=new Date();
+  var dateStr=now.getFullYear()+'. '+(now.getMonth()+1)+'. '+now.getDate()+'.';
+  $('docNo').textContent='제'+now.getFullYear()+'-'+String(1000+Math.floor(Math.random()*9000))+'호';
+  $('docDate').textContent=dateStr;
+
+  // 비교(발신인) 파싱
+  var q=new URLSearchParams(location.search), from=null;
+  var ft=(q.get('t')||'').toUpperCase();
+  if(TYPES[ft]){
+    from={type:ft,name:(q.get('n')||'발신인').slice(0,10)};
+    $('cbName').textContent=from.name;
+    $('cbType').textContent=from.type;
+    $('compareBanner').style.display='block';
+  }
+
+  // ---- 검사 진행 ----
+  function renderQ(){
+    var Q=QS[idx];
+    $('qNum').textContent='문항 '+(idx+1)+' / '+QS.length;
+    $('qBarFill').style.width=Math.round(idx/QS.length*100)+'%';
+    $('qText').textContent=Q.q;
+    $('chAText').textContent=Q.a[0];
+    $('chBText').textContent=Q.b[0];
+  }
+  function answer(side){
+    var Q=QS[idx];
+    score[(side==='a'?Q.a:Q.b)[1]]++;
+    idx++;
+    if(idx>=QS.length){ finish(); return; }
+    renderQ();
+  }
+  $('chA').addEventListener('click',function(){answer('a');});
+  $('chB').addEventListener('click',function(){answer('b');});
+  $('startBtn').addEventListener('click',function(){
+    $('intro').style.display='none'; $('quiz').style.display='block';
+    idx=0; for(var k in score)score[k]=0;
+    renderQ();
+  });
+  $('retryBtn').addEventListener('click',function(){
+    $('report').style.display='none'; $('quiz').style.display='block';
+    idx=0; for(var k in score)score[k]=0;
+    renderQ();
+  });
+
+  // ---- 판정 ----
+  function pctOf(w){ return w===3?88:(w===2?63:50); } // 축당 3문항: 3-0→88%, 2-1→63%
+  function finish(){
+    $('quiz').style.display='none'; $('report').style.display='block';
+    $('rDate').textContent='판정일: '+dateStr;
+    var letters='', axesHtml='';
+    AXES.forEach(function(ax){
+      var A=ax[0],B=ax[1],an=ax[2],bn=ax[3];
+      var win = score[A]>=score[B] ? A : B;
+      letters+=win;
+      var wp=pctOf(Math.max(score[A],score[B]));
+      var leftPct = (win===A)?wp:(100-wp);
+      axesHtml+='<div class="axis"><div class="axisLabels">'
+        +'<span'+(win===A?'><b>':'>')+A+' '+an+' '+(win===A?wp:100-wp)+'%'+(win===A?'</b>':'')+'</span>'
+        +'<span'+(win===B?'><b>':'>')+(win===B?wp:100-wp)+'% '+bn+' '+B+(win===B?'</b>':'')+'</span>'
+        +'</div><div class="gauge"><i style="width:'+leftPct+'%"></i><s></s></div></div>';
+    });
+    myType=letters;
+    $('axes').innerHTML=axesHtml;
+    $('typeLetters').textContent=letters;
+    var T=TYPES[letters];
+    $('typeAlias').textContent='「 '+T[0]+' 」';
+    $('rDesc').textContent=T[1];
+    $('rCaution').textContent=T[2];
+    store('myType',letters);
+    var savedNick=load('nick'); if(savedNick)$('nick').value=savedNick;
+    if(from){
+      var diff=0;
+      for(var i=0;i<4;i++) if(from.type[i]!==letters[i]) diff++;
+      var C=COMPAT[diff];
+      $('compatBox').style.display='block';
+      $('rCompat').innerHTML='<b>'+from.name+'</b> ('+from.type+') × 귀하 ('+letters+') = <b>'+C[0]+' · 궁합 '+C[1]+'%</b><br>'+C[2];
+    }
+  }
+
+  // ---- 공유 ----
+  function requireNick(){
+    var nick=$('nick').value.trim().slice(0,10);
+    if(!nick){ $('nick').classList.add('need'); $('nickWarn').style.display='block'; $('nick').focus(); return null; }
+    $('nick').classList.remove('need'); $('nickWarn').style.display='none';
+    store('nick',nick); return nick;
+  }
+  $('shareBtn').addEventListener('click',function(){
+    if(!myType)return;
+    var nick=requireNick(); if(!nick)return;
+    var T=TYPES[myType];
+    var url=location.origin+location.pathname+'?t='+myType+'&n='+encodeURIComponent(nick);
+    var text='[성격유형 판정 결과통지서]'
+      +String.fromCharCode(10)+nick+' — '+myType+' 「'+T[0]+'」'
+      +String.fromCharCode(10)+'1분이면 당신 것도 나옵니다. 궁합까지 판정해 드립니다.'
+      +String.fromCharCode(10)+url;
+    if(navigator.share){ navigator.share({text:text}).catch(function(){}); }
+    else{
+      if(navigator.clipboard) navigator.clipboard.writeText(text).catch(function(){});
+      var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta);
+      ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta);
+      $('copied').style.display='block';
+      setTimeout(function(){ $('copied').style.display='none'; },2500);
+    }
+  });
+})();
+</script>
+</body>
+</html>

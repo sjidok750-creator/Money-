@@ -22,12 +22,10 @@
 
 ## 현재 상태 (2026-08-28 기준)
 
-- **시도 #1 진행 중: 반응속도 테스트** (`projects/01-reaction/`, ideas 7번)
-  - v1 완성: 5라운드 측정, 등급/백분위, 도전장 링크, 대결 모드
-  - 플레이테스트 아티팩트: https://claude.ai/code/artifact/c2adc6be-761e-4d88-a823-c6907fa9ff75
-  - 다음: 사용자 플레이테스트 피드백 → 실배포(무료 호스팅+OG 태그+광고) → 커뮤니티 씨딩
+- **시도 #1 진행 중: 반응속도 테스트** (독립 저장소 `reaction-test`, ideas 7번)
+  - v1 완성·푸시 완료. OG 태그+카드 이미지 포함. 서비스 주소(예정): https://sjidok750-creator.github.io/reaction-test/
+  - 다음: 사용자가 GitHub Pages 활성화(Settings→Pages→main) → 접속 확인 → 플레이테스트 피드백 → 광고/씨딩
 - 대기 중 아이디어: 11번 "오늘 뭐 볼까" 결정 도구 (시도 #2 유력), 2번 경조사비 계산기, 9번 전자책
-- 미결: 사용자가 GitHub에 `reaction-test` 빈 저장소 생성 시 코드 이전
 
 ## 작업 브랜치
 

@@ -30,7 +30,9 @@
   - v1 완성: 12문항 행동상황 검사 → 결과통지서(도장·게이지·소견) + 궁합 판정 + 공유 링크
   - 플레이테스트 아티팩트: https://claude.ai/code/artifact/8013d313-5b96-4580-a20d-b239c144bce0
   - 독립 저장소 이전 완료: https://github.com/sjidok750-creator/type-test
-  - 다음: Pages 활성화 → https://sjidok750-creator.github.io/type-test/ 출시 → 피드백/씨딩
+  - **2026-08-28 정식 출시**: https://sjidok750-creator.github.io/type-test/
+  - 두 사이트 상호 링크 완료 (오락실 ↔ 판정소 트래픽 순환)
+  - 다음: 씨딩 → 유입 확인 시 애드핏
   - 주의: "MBTI" 명칭 사용 금지(상표) — "성격유형"으로 표기
 - 대기 중 아이디어: 11번 "오늘 뭐 볼까" 결정 도구, 2번 경조사비 계산기, 9번 전자책
 

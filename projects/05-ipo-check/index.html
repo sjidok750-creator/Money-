@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>공모주 판정기 v0</title>
+<style>
+  :root{--bg:#0f1115;--card:#171a21;--line:#262a33;--fg:#e8eaf0;--mut:#9aa1ad;--g:#3ddc84;--y:#ffcc4d;--r:#ff5c5c;--acc:#7aa2ff}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Pretendard","Noto Sans KR",sans-serif}
+  main{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+  h1{font-size:22px;margin:0 0 4px}
+  .sub{color:var(--mut);font-size:13px;margin-bottom:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+  .card h2{font-size:15px;margin:0 0 12px;color:var(--acc)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+  label{display:block;font-size:12px;color:var(--mut);margin-bottom:4px}
+  input,select{width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:#0c0e12;color:var(--fg);font-size:15px}
+  .hint{font-size:11px;color:var(--mut);margin-top:3px}
+  .verdict{font-size:26px;font-weight:800;margin:4px 0 8px}
+  .G{color:var(--g)} .Y{color:var(--y)} .R{color:var(--r)}
+  ul{margin:6px 0 0 18px;padding:0} li{margin:3px 0}
+  table{width:100%;border-collapse:collapse;font-size:14px} td,th{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right} th:first-child,td:first-child{text-align:left}
+  .big{font-size:20px;font-weight:700}
+  .warn{border-color:#5a4a1a;background:#1f1a0e;color:#f2d98a;font-size:13px}
+</style>
+</head>
+<body>
+<main>
+  <h1>공모주 판정기 <span style="color:var(--mut);font-weight:400">v0</span></h1>
+  <div class="sub">균등배정 청약 여부·기대 이익·손익분기를 계산한다. 숫자는 38커뮤니케이션 / 증권사 공고 / 증권신고서에서 손으로 입력. 네트워크 없음.</div>
+
+  <div class="card">
+    <h2>1. 공모 기본 정보</h2>
+    <div class="grid">
+      <div><label>공모가 (원)</label><input id="price" type="number" value="20000"></div>
+      <div><label>공모가 밴드 위치</label>
+        <select id="band"><option value="above">상단 초과</option><option value="top" selected>상단</option><option value="mid">중간</option><option value="bottom">하단</option></select></div>
+      <div><label>이 증권사 균등배정 물량 (주)</label><input id="eqShares" type="number" value="150000"><div class="hint">일반배정 물량 × 균등 비율(2025.9 이후 보통 75%). 증권사 공고 확인</div></div>
+      <div><label>예상 청약 건수 (이 증권사)</label><input id="apps" type="number" value="200000"><div class="hint">마감일 오후 경쟁률 기사 또는 유사 규모 공모의 건수</div></div>
+      <div><label>최소 청약 주수</label><input id="minLot" type="number" value="10"></div>
+      <div><label>증거금률 (%)</label><input id="margin" type="number" value="50"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2. 판정 지표</h2>
+    <div class="grid">
+      <div><label>기관 수요예측 경쟁률 (:1)</label><input id="instRatio" type="number" value="1000"></div>
+      <div><label>의무보유확약 비율 (%)</label><input id="lockup" type="number" value="30"></div>
+      <div><label>일반청약 경쟁률 (:1, 마감일 오후)</label><input id="retailRatio" type="number" value="1000"></div>
+      <div><label>상장일 유통가능물량 비율 (%)</label><input id="floatPct" type="number" value="30"></div>
+      <div><label>코스닥 최근 1개월 등락 (%)</label><input id="kosdaq1m" type="number" value="0"></div>
+      <div><label>환매청구권(풋백옵션)</label><select id="putback"><option value="no" selected>없음</option><option value="yes">있음 (공모가 90%)</option></select></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>3. 비용·계좌</h2>
+    <div class="grid">
+      <div><label>청약 수수료 (원/건)</label><input id="fee" type="number" value="2000"></div>
+      <div><label>매도 세금+수수료 (%)</label><input id="sellCost" type="number" value="0.2" step="0.01"></div>
+      <div><label>청약 계좌 수 (본인+가족, 각자 직접 청약)</label><input id="accounts" type="number" value="1"></div>
+    </div>
+  </div>
+
+  <div class="card" id="out"></div>
+
+  <div class="card warn">이 판정은 2025~2026 뉴스·제도에서 뽑은 체크리스트다. 전 종목 백테스트 전까지는 예측기가 아니다. 중복청약 금지: 한 공모에 1인 1증권사 1계좌. 가족 계좌는 명의자 본인이 직접 청약해야 한다. 매도는 시초가 동시호가(8:00~9:00)에 미리 주문.</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const num=id=>parseFloat($(id).value)||0;
+const won=v=>Math.round(v).toLocaleString('ko-KR')+'원';
+function judge(){
+  const price=num('price'), eq=num('eqShares'), apps=Math.max(1,num('apps')), minLot=num('minLot'), margin=num('margin')/100;
+  const inst=num('instRatio'), lock=num('lockup'), retail=num('retailRatio'), fl=num('floatPct'), kq=num('kosdaq1m');
+  const put=$('putback').value==='yes', band=$('band').value;
+  const fee=num('fee'), sell=num('sellCost')/100, acc=Math.max(1,num('accounts'));
+
+  // 균등 배정 기대 주수
+  const exp=eq/apps; const whole=Math.floor(exp); const frac=exp-whole;
+  const deposit=price*minLot*margin;
+  // 손익분기: 기대 주수 기준으로 수수료를 넘기려면 필요한 시초가 수익률
+  const beRet = exp>0 ? (fee/(exp*price) + sell) : Infinity;
+
+  // 판정
+  const flags=[]; let red=0,yel=0;
+  const f=(cond,level,msg)=>{ if(cond){ flags.push({level,msg}); if(level==='R')red++; if(level==='Y')yel++; } };
+  f(inst<300,'R',`기관 경쟁률 ${inst}:1 — 300 미만`); f(inst>=300&&inst<1000,'Y',`기관 경쟁률 ${inst}:1 — 1,000 미만`);
+  f(lock<15,'R',`확약 비율 ${lock}% — 15% 미만`); f(lock>=15&&lock<30,'Y',`확약 비율 ${lock}% — 30% 미만`);
+  f(band==='bottom','R','공모가 밴드 하단 확정 (수요 약함)'); f(band==='mid','Y','공모가 밴드 중간');
+  f(retail<100,'R',`일반청약 경쟁률 ${retail}:1 — 100 미만`); f(retail>=100&&retail<1000,'Y',`일반청약 경쟁률 ${retail}:1 — 1,000 미만`);
+  f(fl>40,'R',`유통가능물량 ${fl}% — 40% 초과`); f(fl>30&&fl<=40,'Y',`유통가능물량 ${fl}% — 30% 초과`);
+  f(kq<-10,'R',`코스닥 1개월 ${kq}% — 급락장`); f(kq>=-10&&kq<-5,'Y',`코스닥 1개월 ${kq}% — 약세`);
+  f(beRet>0.5,'Y',`손익분기 시초가 +${(beRet*100).toFixed(0)}% — 수수료가 이익을 잠식`);
+
+  let verdict, cls, reason;
+  if(put){ verdict='소액 참여 가능'; cls='G'; reason='환매청구권으로 손실 상한 -10%. 다른 지표가 약해도 균등 최소 청약은 기대값이 크게 나쁘지 않다.'; if(red>=2){verdict='주의하며 참여';cls='Y';} }
+  else if(red>=1){ verdict='패스'; cls='R'; reason='빨강 항목이 하나라도 있으면 청약하지 않는다.'; }
+  else if(yel>=2){ verdict='패스'; cls='R'; reason='노랑 항목 둘 이상.'; }
+  else if(yel===1){ verdict='참여 (보수적)'; cls='Y'; reason='노랑 하나. 시초가 매도 원칙 엄수.'; }
+  else { verdict='참여'; cls='G'; reason='전 항목 초록. 균등 최소 청약 후 시초가 매도.'; }
+
+  // 시나리오 기대이익 (기대 주수 기준, 계좌 수 곱)
+  const scen=[['-10% (환매청구권 하한)',-0.10],['+30%',0.30],['+75% (2025년 상장일 평균)',0.75],['+100% (따블)',1.0]];
+  const rows=scen.map(([n,r])=>{ const gross=exp*price*r; const net=(gross - exp*price*(1+r)*sell - fee)*acc; return `<tr><td>${n}</td><td>${won(net)}</td></tr>`; }).join('');
+
+  $('out').innerHTML=`
+    <h2>4. 판정</h2>
+    <div class="verdict ${cls}">${verdict}</div>
+    <div style="color:var(--mut);margin-bottom:10px">${reason}</div>
+    ${flags.length?'<ul>'+flags.map(x=>`<li class="${x.level}">${x.level==='R'?'🔴':'🟡'} ${x.msg}</li>`).join('')+'</ul>':'<div class="G">🟢 경고 항목 없음</div>'}
+    <table style="margin-top:14px">
+      <tr><th>항목</th><th>값</th></tr>
+      <tr><td>기대 배정 주수 (계좌당)</td><td class="big">${exp.toFixed(2)}주${whole===0?` <span style="font-size:12px;color:var(--mut)">→ ${(frac*100).toFixed(0)}% 확률로 1주 추첨</span>`:''}</td></tr>
+      <tr><td>필요 증거금 (계좌당, 2영업일 후 환불)</td><td>${won(deposit)}</td></tr>
+      <tr><td>손익분기 시초가 수익률 (수수료 회수)</td><td>${isFinite(beRet)?'+'+(beRet*100).toFixed(1)+'%':'-'}</td></tr>
+      <tr><th colspan="2" style="text-align:left;padding-top:12px">시나리오별 순이익 (${acc}계좌 합계, 수수료·매도비용 차감)</th></tr>
+      ${rows}
+    </table>`;
+}
+document.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',judge));
+judge();
+</script>
+</body>
+</html>

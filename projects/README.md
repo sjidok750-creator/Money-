@@ -9,3 +9,4 @@
 | #3 크몽 전자책 | 작업 중 (`03-ebook/`) | – |
 | 공모주 판정기 v0 | 개인용 도구 (`05-ipo-check/`, 배포 불필요) | – |
 | 빗썸 봇 감사 스크립트 | 개인용 도구 (`06-trade-audit/`, VPS에서 실행) | 봇: https://github.com/sjidok750-creator/Trade |
+| 봇 함대: 평균회귀 백테스트 | Trade/backtest에 복사해 실행 (`07-bot-fleet/mr.py`) | 봇: https://github.com/sjidok750-creator/Trade |
